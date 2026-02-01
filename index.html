@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ҮН АНАЛИЗАТОРУ v3.2</title>
+    <title>ҮН АНАЛИЗАТОРУ v3.6</title>
     <style>
         :root {
             --primary: #3b82f6;
@@ -42,7 +42,7 @@
 
         .container {
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
             background: var(--card-bg);
             padding: 40px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
@@ -51,7 +51,25 @@
             border: 1px solid var(--border);
         }
 
-        h1 { font-weight: 800; font-size: 2rem; margin-bottom: 30px; letter-spacing: -1px; }
+        h1 { font-weight: 800; font-size: 1.8rem; margin-bottom: 25px; letter-spacing: -1px; }
+
+        /* Поля ввода и кнопки */
+        input[type="password"] {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            font-size: 18px;
+            text-align: center;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="password"]:focus {
+            border-color: var(--primary);
+        }
 
         .btn {
             background: var(--primary);
@@ -99,14 +117,7 @@
             box-sizing: border-box;
         }
 
-        .editor-hint {
-            font-size: 12px;
-            color: #64748b;
-            text-align: left;
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-
+        /* Сканер и результаты */
         #question-text {
             font-size: 1.8rem;
             font-weight: 700;
@@ -115,6 +126,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 0 20px;
         }
 
         .scanner-box {
@@ -143,65 +155,38 @@
         @keyframes scan { from { top: 0%; } to { top: 100%; } }
 
         #verdict-text {
-            font-size: 3.5rem; /* Немного уменьшил, чтобы длинные фразы влезали */
+            font-size: 3rem;
             font-weight: 900;
             display: none;
             z-index: 10;
             text-align: center;
             width: 90%;
-            line-height: 1;
+            line-height: 1.1;
             word-wrap: break-word;
         }
 
-        .truth { color: var(--truth); text-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
-        .lie { color: var(--lie); text-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
+        .truth { color: var(--truth); }
+        .lie { color: var(--lie); }
         .custom { color: var(--primary); }
-
-        .status-msg {
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #94a3b8;
-            margin-bottom: 20px;
-        }
-
-        .pulse-svg { 
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%; 
-            height: 100px; 
-            opacity: 0.1; 
-            z-index: 1;
-        }
 
         .mic-indicator {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 4px 12px;
+            padding: 8px 16px;
             background: #f1f5f9;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 600;
             color: #64748b;
             margin-bottom: 15px;
         }
 
-        .mic-dot {
-            width: 8px;
-            height: 8px;
-            background: #cbd5e1;
-            border-radius: 50%;
-        }
+        .mic-dot { width: 10px; height: 10px; background: #cbd5e1; border-radius: 50%; }
+        .mic-active { background: #fee2e2; color: #ef4444; }
+        .mic-active .mic-dot { background: #ef4444; animation: pulse-red 1s infinite; }
 
-        .mic-active .mic-dot {
-            background: #ef4444;
-            box-shadow: 0 0 8px #ef4444;
-            animation: pulse-red 1s infinite;
-        }
-
-        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes pulse-red { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
 
         .footer-hints {
             position: fixed;
@@ -210,39 +195,57 @@
             color: #cbd5e1;
             text-transform: uppercase;
         }
+
+        #auth-error {
+            color: var(--lie);
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-<div id="menu-screen" class="screen active">
+<!-- ЭКРАН ПАРОЛЯ -->
+<div id="auth-screen" class="screen active">
     <div class="container">
-        <div style="font-size: 50px; margin-bottom: 10px;">🎙️</div>
+        <div style="font-size: 50px; margin-bottom: 15px;">🔒</div>
+        <h1>КИРҮҮ</h1>
+        <p style="color: #64748b; margin-bottom: 20px;">Системага кирүү үчүн паролду жазыңыз</p>
+        <input type="password" id="pass-input" placeholder="Пароль">
+        <div id="auth-error">Ката пароль! Кайра аракет кылыңыз.</div>
+        <button class="btn" onclick="checkPassword()">КИРҮҮ</button>
+    </div>
+</div>
+
+<!-- ГЛАВНОЕ МЕНЮ -->
+<div id="menu-screen" class="screen">
+    <div class="container">
+        <div style="font-size: 60px; margin-bottom: 10px;">🎙️</div>
         <h1>ҮН АНАЛИЗАТОРУ</h1>
         <button class="btn" onclick="showScreen('game-screen')">БАШТОО</button>
         <button class="btn btn-outline" onclick="showScreen('editor-screen')">СУРООЛОРДУ ОҢДОО</button>
     </div>
 </div>
 
+<!-- РЕДАКТОР -->
 <div id="editor-screen" class="screen">
     <div class="container">
         <h2>ОҢДОО</h2>
-        <div class="editor-hint">
-            Формат: <b>Суроо | Сиздин жооп</b><br>
-            Мисалы: <i>Сен мени сүйөсүңбү? | АБДАН ЧОҢ КАЛП</i><br>
-            Жоопто "калп" же "чындык" сөздөрү болсо, түсү автоматтык түрдө өзгөрөт.
-        </div>
-        <textarea id="questions-input">Сиз өмүрлүк жарыңызды жакшы көрөсүзбү? | ЧЫНДЫК
+        <textarea id="questions-input">Сиз өмүрлүк жарыңызды жакшы көрөсүзбү? | ТОЛУК ЧЫНДЫК
 Айлыгыңыз жөнүндө чындыкты жашырдыңыз беле? | КУРАМА КАЛП
 Бул бөлмөдө эң акылдуумун деп ойлойсузбу?
-Быйыл жаңы унаа алууну пландап жатасызбы? | ТОЛУК ЧЫНДЫК</textarea>
+Быйыл жаңы унаа алууну пландап жатасызбы? | ЧЫНДЫК</textarea>
         <button class="btn" onclick="saveQuestions()">САКТОО ЖАНА КАЙТУУ</button>
     </div>
 </div>
 
+<!-- ИГРА -->
 <div id="game-screen" class="screen">
     <button class="btn btn-outline btn-menu" onclick="showScreen('menu-screen')">◀ МЕНЮ</button>
     
-    <div id="main-content" style="width: 100%; max-width: 600px; text-align: center;">
+    <div style="width: 100%; max-width: 600px; text-align: center;">
         <div id="mic-status" class="mic-indicator">
             <div class="mic-dot"></div>
             <span>МИКРОФОН ЖАБЫК</span>
@@ -252,26 +255,25 @@
 
         <div class="scanner-box">
             <div id="scan-line"></div>
-            <svg class="pulse-svg" viewBox="0 0 1000 100">
+            <svg style="position: absolute; opacity: 0.1; width: 100%; height: 100px;" viewBox="0 0 1000 100">
                 <polyline id="v-line" fill="none" stroke="#3b82f6" stroke-width="3" points="0,50 100,50 120,20 140,80 160,50 1000,50" />
             </svg>
             <div id="verdict-text">---</div>
         </div>
 
-        <div id="status-bar" class="status-msg">СТАТУС: КҮТҮҮ...</div>
+        <div id="status-bar" style="font-weight: 700; color: #94a3b8; margin-bottom: 20px;">СТАТУС: КҮТҮҮ...</div>
 
-        <div style="display: flex; justify-content: center; gap: 30px; color: #64748b; font-weight: 600;">
+        <div style="display: flex; justify-content: center; gap: 40px; color: #64748b; font-weight: 700;">
             <div>СТРЕСС: <span id="stress-val">0</span>%</div>
             <div>ПУЛЬС: <span id="pulse-val">72</span> bpm</div>
         </div>
     </div>
 </div>
 
-<div class="footer-hints">
-    [Space] - Кийинки | [T] - Чындык | [L] - Калп
-</div>
-
 <script>
+    // --- НАСТРОЙКА ПАРОЛЯ ---
+    const APP_PASSWORD = "980097"; // Измените это значение на свой пароль
+
     let questions = [];
     let currentIdx = 0;
     let recognition;
@@ -290,201 +292,134 @@
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         } catch(e) {}
     }
+
+    // Проверка пароля
+    function checkPassword() {
+        const input = document.getElementById('pass-input').value;
+        const errorMsg = document.getElementById('auth-error');
+        
+        if (input === APP_PASSWORD) {
+            showScreen('menu-screen');
+        } else {
+            errorMsg.style.display = 'block';
+            document.getElementById('pass-input').value = "";
+            playSound(100, 0.3, 'sawtooth');
+        }
+    }
+
+    // Обработка нажатия Enter в поле пароля
+    document.getElementById('pass-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkPassword();
+    });
 
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        
-        if (id === 'game-screen') {
-            resetGame();
-        } else {
-            stopMic();
-        }
+        if (id === 'game-screen') resetGame();
+        else stopMic();
     }
 
     function saveQuestions() {
         const text = document.getElementById('questions-input').value;
         questions = text.split('\n').filter(line => line.trim() !== "").map(line => {
             const parts = line.split('|');
-            return {
-                text: parts[0].trim(),
-                fixedAnswerText: parts[1] ? parts[1].trim() : null
-            };
+            return { text: parts[0].trim(), fixedAnswerText: parts[1] ? parts[1].trim() : null };
         });
         showScreen('menu-screen');
     }
 
     function resetGame() {
-        currentIdx = 0;
-        isAnalyzing = false;
-        isMicReady = false;
+        currentIdx = 0; isAnalyzing = false; isMicReady = false;
         updateMicUI(false);
         document.getElementById('question-text').innerText = "Баштоо үчүн [ПРОБЕЛ] басыңыз";
         document.getElementById('verdict-text').style.display = 'none';
         document.getElementById('status-bar').innerText = "СТАТУС: КҮТҮҮ...";
-        document.getElementById('status-bar').style.color = "#94a3b8";
         if (questions.length === 0) saveQuestions();
     }
 
     function updateMicUI(active) {
         const mic = document.getElementById('mic-status');
-        if (active) {
-            mic.classList.add('mic-active');
-            mic.querySelector('span').innerText = "МИКРОФОН УГУП ЖАТАТ...";
-        } else {
-            mic.classList.remove('mic-active');
-            mic.querySelector('span').innerText = "МИКРОФОН ЖАБЫК";
-        }
+        mic.className = active ? 'mic-indicator mic-active' : 'mic-indicator';
+        mic.querySelector('span').innerText = active ? "МИКРОФОН УГУП ЖАТАТ..." : "МИКРОФОН ЖАБЫК";
     }
 
     function setupMic() {
         window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!window.SpeechRecognition) return;
-
         if (recognition) recognition.stop();
-
         recognition = new SpeechRecognition();
         recognition.lang = 'ky-KG';
-        recognition.interimResults = false;
-
-        recognition.onstart = () => {
-            isMicReady = true;
-            updateMicUI(true);
-        };
-
-        recognition.onresult = (event) => {
-            startAnalysis();
-        };
-
-        recognition.onerror = () => {
-            if (isMicReady && !isAnalyzing) setTimeout(() => { try { recognition.start(); } catch(e){} }, 500);
-        };
-
-        recognition.onend = () => {
-            if (isMicReady && !isAnalyzing) try { recognition.start(); } catch(e){}
-        };
-
+        recognition.onstart = () => { isMicReady = true; updateMicUI(true); };
+        recognition.onresult = () => startAnalysis();
+        recognition.onend = () => { if (isMicReady && !isAnalyzing) try { recognition.start(); } catch(e){} };
         try { recognition.start(); } catch(e) {}
     }
 
-    function stopMic() {
-        isMicReady = false;
-        updateMicUI(false);
-        if (recognition) recognition.stop();
-    }
+    function stopMic() { isMicReady = false; updateMicUI(false); if (recognition) recognition.stop(); }
 
     function startAnalysis() {
         if (isAnalyzing) return;
         isAnalyzing = true;
-        
         updateMicUI(false); 
-        
         playSound(600, 0.1);
         document.getElementById('verdict-text').style.display = 'none';
         const line = document.getElementById('scan-line');
         line.style.display = 'block';
-        line.style.animation = "scan 1.2s infinite alternate ease-in-out";
-        
-        document.getElementById('status-bar').innerText = "ҮНҮҢҮЗДҮ ТАЛДАП ЖАТАБЫЗ...";
-        document.getElementById('status-bar').style.color = "var(--primary)";
-
+        line.style.animation = "scan 1s infinite alternate ease-in-out";
         let interval = setInterval(() => {
-            document.getElementById('stress-val').innerText = Math.floor(Math.random() * 50 + 20);
-            document.getElementById('pulse-val').innerText = Math.floor(Math.random() * 30 + 70);
-        }, 100);
-
-        setTimeout(() => {
-            clearInterval(interval);
-            showVerdict();
-        }, 3000);
+            document.getElementById('stress-val').innerText = Math.floor(Math.random() * 40 + 30);
+            document.getElementById('pulse-val').innerText = Math.floor(Math.random() * 20 + 80);
+        }, 80);
+        setTimeout(() => { clearInterval(interval); showVerdict(); }, 3500);
     }
 
     function showVerdict() {
-        isAnalyzing = false;
+        isAnalyzing = false; isMicReady = false;
+        if (recognition) recognition.stop();
         document.getElementById('scan-line').style.display = 'none';
         const vText = document.getElementById('verdict-text');
         vText.style.display = 'block';
-
         const currentQuestion = questions[currentIdx - 1];
         let displayText = "";
-        let colorClass = "custom";
-
-        // Определяем текст и категорию (ложь или правда)
-        if (forcedResult !== null) {
-            displayText = forcedResult === 'lie' ? "КАЛП" : "ЧЫНДЫК";
-        } else if (currentQuestion && currentQuestion.fixedAnswerText) {
-            displayText = currentQuestion.fixedAnswerText;
-        } else {
-            displayText = Math.random() > 0.5 ? "КАЛП" : "ЧЫНДЫК";
-        }
-
+        if (forcedResult !== null) displayText = forcedResult === 'lie' ? "КАЛП" : "ЧЫНДЫК";
+        else if (currentQuestion && currentQuestion.fixedAnswerText) displayText = currentQuestion.fixedAnswerText;
+        else displayText = Math.random() > 0.5 ? "КАЛП" : "ЧЫНДЫК";
         const lowerText = displayText.toLowerCase();
-        const isLie = lowerText.includes('калп') || lowerText.includes('lie') || lowerText.includes('ложь');
-        const isTruth = lowerText.includes('чындык') || lowerText.includes('truth') || lowerText.includes('правда');
-
-        if (isLie) colorClass = "lie";
-        else if (isTruth) colorClass = "truth";
-
+        let colorClass = "custom";
+        if (lowerText.includes('калп') || lowerText.includes('жалган')) colorClass = "lie";
+        else if (lowerText.includes('чындык') || lowerText.includes('чын')) colorClass = "truth";
         vText.innerText = displayText.toUpperCase();
         vText.className = colorClass;
-
-        if (colorClass === "lie") {
-            document.getElementById('status-bar').innerText = "ЖАЛГАН АНЫКТАЛДЫ!";
-            document.getElementById('status-bar').style.color = "var(--lie)";
-            document.getElementById('stress-val').innerText = Math.floor(Math.random() * 10 + 90);
-            playSound(150, 0.6, 'sawtooth');
-        } else {
-            document.getElementById('status-bar').innerText = "ТАТЫКТУУ ЖООП";
-            document.getElementById('status-bar').style.color = colorClass === "truth" ? "var(--truth)" : "var(--primary)";
-            document.getElementById('stress-val').innerText = Math.floor(Math.random() * 10 + 5);
-            playSound(800, 0.2);
-            setTimeout(() => playSound(1000, 0.3), 100);
-        }
-
         forcedResult = null; 
     }
 
     function animatePulse() {
         const polyline = document.getElementById('v-line');
         let offset = 0;
-        function step() {
-            offset -= 2;
-            if (offset < -200) offset = 0;
+        setInterval(() => {
+            offset -= 2.5; if (offset < -200) offset = 0;
             polyline.setAttribute('transform', `translate(${offset}, 0)`);
-            requestAnimationFrame(step);
-        }
-        step();
+        }, 30);
     }
 
     window.addEventListener('keydown', (e) => {
         if (!document.getElementById('game-screen').classList.contains('active')) return;
-        
         const key = e.key.toLowerCase();
-        
         if (e.code === "Space") {
             e.preventDefault();
+            if (isAnalyzing) return;
             if (currentIdx < questions.length) {
                 document.getElementById('question-text').innerText = questions[currentIdx].text;
                 document.getElementById('verdict-text').style.display = 'none';
-                document.getElementById('status-bar').innerText = "ЖООПТУ КҮТҮҮДӨ...";
-                document.getElementById('status-bar').style.color = "#94a3b8";
-                currentIdx++;
-                setupMic();
-            } else {
-                document.getElementById('question-text').innerText = "СУРООЛОР БҮТТҮ";
-                document.getElementById('status-bar').innerText = "МЕНЮГА КАЙТЫҢЫЗ";
-                stopMic();
+                currentIdx++; setupMic();
             }
         }
-
         if (key === "t" || key === "е") forcedResult = 'truth';
         if (key === "l" || key === "д") forcedResult = 'lie';
     });
-
     animatePulse();
 </script>
 </body>
